@@ -219,6 +219,16 @@ color: #1D6154;
 		background-color: #1D6154;
 		color: white;
 	}
+/*     filtered-works       */
+ #filtered-works #img {
+		width: 1%;
+		display: grid;
+		grid-template-columns: 1fr 1fr 1fr;
+		grid-column-gap: 20px;
+		grid-row-gap: 20px;
+		margin-left: 5%;
+		margin-right: 5%;
+	 }
 /*     Login.html         */
 	#connection {
 		display: block;
