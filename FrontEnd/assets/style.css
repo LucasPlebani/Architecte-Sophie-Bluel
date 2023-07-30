@@ -176,6 +176,30 @@ footer nav ul {
 }
 
 /*     Travail mis en place          */
+
+/*     Navigation          */
+.projet-a  {
+	text-decoration: none;
+	color: black;
+	padding: 0px 10px 0px 10px;
+font-family: 'Work Sans';
+font-size: 1.2em;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
+}
+.login-a {
+	text-decoration: none;
+	color: black;
+	padding: 0px 10px 0px 10px;
+font-family: 'Work Sans';
+font-size: 1.2em;
+font-style: normal;
+font-weight: 400;
+line-height: normal;
+}
+
+/*    GAllery photo          */
 #gallery {
 	width: 90%;
 	display: grid;
@@ -206,29 +230,34 @@ gap: 30px;
 margin-bottom: 50px;
 
 }
-#categories-menu li { 
+#categories-menu button  { 
 	border-radius: 20px 20px ;
 	border: solid 1px;
 	padding: 10px;
 	font-family: 'syne';
 font-size: 16px;
 color: #1D6154;
-	}
+background-color: white;
+cursor: pointer;
+			}
+			input#tous-input{ 	border-radius: 20px 20px ;
+				border: solid 1px;
+				padding: 10px;
+				font-family: 'syne';
+			font-size: 16px;
+			color: #1D6154;
+			background-color: white;
+			cursor: pointer;
+		}
 
-	#categories-menu li:hover {
+	#categories-menu :hover {
 		background-color: #1D6154;
 		color: white;
 	}
-/*     filtered-works       */
- #filtered-works #img {
-		width: 1%;
-		display: grid;
-		grid-template-columns: 1fr 1fr 1fr;
-		grid-column-gap: 20px;
-		grid-row-gap: 20px;
-		margin-left: 5%;
-		margin-right: 5%;
-	 }
+
+	
+	
+	
 /*     Login.html         */
 	#connection {
 		display: block;

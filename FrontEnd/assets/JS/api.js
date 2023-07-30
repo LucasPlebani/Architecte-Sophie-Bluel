@@ -1,4 +1,4 @@
-// apport des api Catégories / works //
+// apport des api Catégories //
 export async function getDatabaseInfo(type){
 	const response  = await fetch(`http://localhost:5678/api/${type}`)
 	if (response.ok) {

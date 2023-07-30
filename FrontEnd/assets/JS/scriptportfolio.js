@@ -24,14 +24,21 @@ document.body.onload = addElements;
 async function addElements() {
   await loadWorks();
   await loadCategories();
+
+  const tousButton = document.getElementById("tous-input");
+  tousButton.addEventListener("click", function () {
+    displayWorksByCategory(0); // 0 correspond à l'ID de catégorie pour afficher tous les works
+  });
+
 }
+document.body.onload = addElements;
 
 async function loadWorks() {
   const apiUrl = 'http://localhost:5678/api/works';
   try {
     const response = await fetch(apiUrl);
     const data = await response.json();
-    const contentContainer = document.getElementById("gallery");
+    const gallery = document.getElementById("gallery");
 
     data.forEach(work => {
       const workDiv = document.createElement("div");
@@ -39,7 +46,7 @@ async function loadWorks() {
           <img src="${work.imageUrl}" alt="${work.title}">
           <h2>${work.title}</h2>
           `;
-      contentContainer.appendChild(workDiv);
+      gallery.appendChild(workDiv);
     });
   } catch (error) {
     console.error('Une erreur est survenue lors de la récupération du contenu depuis l\'API des Works:', error);
@@ -82,6 +89,7 @@ async function loadCategories() {
         displayWorksByCategory(categorie.id); // Utiliser l'id de la catégorie lors du filtrage
       });
       categoriesMenu.appendChild(btn);
+      
     });
   } catch (error) {
     console.error('Une erreur est survenue lors de la récupération du contenu depuis API des Categories:', error);
@@ -96,13 +104,19 @@ initCat();
 function displayWorksByCategory(categoryId) {
   hideOtherContent(categoryId); // Appeler la fonction hideOtherContent pour masquer les contenus associés aux autres catégories
 
-  // ... Votre code pour masquer les contenus associés aux autres catégories ...
+  const filteredWorks = Array.from(allWorks).filter((work) => {
+    if (categoryId === 0) {
+      // Si categoryId est 0, afficher tous les works
+      return true;
+    } else {
+      return work.categoryId === categoryId;
+    }
+  });
 
-  const filteredWorks = Array.from(allWorks).filter((work) => work.categoryId === categoryId);
   console.log(filteredWorks);
 
   // Obtenez la référence de la section où les works filtrés seront affichés
-  const filteredWorksSection = document.getElementById("filtered-works");
+  const filteredWorksSection = document.getElementById("gallery");
 
   // Videz le contenu de la section avant d'ajouter les works filtrés
   filteredWorksSection.innerHTML = "";
@@ -118,16 +132,18 @@ function displayWorksByCategory(categoryId) {
   });
 }
 
+
 // Fonction pour masquer les contenus associés aux autres catégories
 function hideOtherContent(categoryId) {
   const contentContainers = document.querySelectorAll(".content-container");
   contentContainers.forEach(container => {
-    if (container.dataset.categoryId !== categoryId) {
+    if (categoryId !== 0 && container.dataset.categoryId !== categoryId) {
       container.style.display = "none";
     } else {
       container.style.display = "block";
     }
   });
+  
 }
 
 // Fonction pour afficher le contenu associé à la catégorie sélectionnée
