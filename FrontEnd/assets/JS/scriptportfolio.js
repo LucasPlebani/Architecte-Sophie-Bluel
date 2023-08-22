@@ -1,6 +1,11 @@
 import * as api from "./api.js"; /* import de /api.js sur scriptporfolio.js*/
 const allWorks = new Set(); // création du set allWorks 
-const allCat = new Set(); // création du set allCat 
+const allCats = new Set(); // création du set allCat 
+let modal = null; // fenetre modale 
+let addPhotoModal = null; // fenetre modale ajout photo
+const focusableSelector = 'button, a, input, textarea'; // Sélecteur pour les éléments focusables dans la fenêtre modale
+let focusables = []; // Tableau pour stocker les éléments focusables dans la fenêtre modale
+const token = localStorage.getItem("token")
 
 async function init() {
   const works = await api.getDatabaseInfo("works");
@@ -11,149 +16,93 @@ async function init() {
   } else {
     alert("erreur lors du contact avec le serveur");
   }
+  const cats = await api.getDatabaseInfo("categories");
+  if (cats) {
+    for (const cat of cats) {
+      allCats.add(cat);
+    }
+  } else {
+    alert("erreur lors du contact avec le serveur");
+  }
   displayWorks();  /* Affichage dans la console*/
-  addElements();
-}
-function displayCats() {
-  console.log(allCat);
+  if(token){
+    displayAdmin();
+    displayWorksModal();
+    setupModals();
+  } else {
+    displayCats();
+  }
 }
 init();
 
-// Affichage de l'api Works sur l'html
-async function addElements() {
-  await loadCategories();
-
-  const tousButton = document.getElementById("tous-input");
-  tousButton.addEventListener("click", function () {
-    displayWorksByCategory(0); // 0 correspond à l'ID de catégorie pour afficher tous les works
-  });
+function displayAdmin(){
 
 }
 
-async function loadCategories() {
-  try {
-    const categories = await api.getDatabaseInfo("categories");
-    if (categories) {
-      for (const categorie of categories) {
-        allCat.add(categorie);
-        // Générer les boutons de filtre pour chaque catégorie
-        const categoriesMenu = document.getElementById("categories-menu");
-        const btn = document.createElement("button");
-        btn.textContent = categorie.name;
-        btn.value = categorie.id; // Utiliser l'id de la catégorie comme valeur du bouton
-        btn.addEventListener("click", function () {
-          displayWorksByCategory(categorie.id); // Utiliser l'id de la catégorie lors du filtrage
-        });
-        categoriesMenu.appendChild(btn);
-      }
-    } else {
-      alert("erreur lors du contact avec le serveur categories");
-    }
-    displayCats(); // Ajouter l'appel à la fonction displayCats ici
-  } catch (error) {
-    console.error('Une erreur est survenue lors de la récupération du contenu depuis API des Categories:', error);
-    alert("erreur lors du contact avec le serveur");
+function displayCats() {
+  const tousButton = document.getElementById("tous-input");
+  tousButton.addEventListener("click", function () {
+    displayWorks();
+  });
+  for (const categorie of allCats) {
+    // Générer les boutons de filtre pour chaque catégorie
+    const categoriesMenu = document.getElementById("categories-menu");
+    const btn = document.createElement("button");
+    btn.textContent = categorie.name;
+    btn.value = categorie.id; //id de la catégorie comme valeur du bouton
+    btn.addEventListener("click", function () {
+      displayWorks(categorie.id); //id de la catégorie lors du filtrage
+    });
+    categoriesMenu.appendChild(btn);
   }
 }
 
-// Fonction pour filtrer et afficher les works en fonction de la catégorie
-function displayWorksByCategory(categoryId) {
-  hideOtherContent(categoryId); // Appeler la fonction hideOtherContent pour masquer les contenus associés aux autres catégories
 
-  const filteredWorks = Array.from(allWorks).filter((work) => {
-    if (categoryId === 0) {
-      // Si categoryId est 0, afficher tous les works
-      return true;
-    } else {
-      return work.categoryId === categoryId;
-    }
-  });
-
-  console.log(filteredWorks);
-
-  // Obtenez la référence de la section où les works filtrés seront affichés
-  const filteredWorksSection = document.getElementById("gallery");
-
-  // Videz le contenu de la section avant d'ajouter les works filtrés
-  filteredWorksSection.innerHTML = "";
-
-  // Parcourez les works filtrés et créez les éléments HTML correspondants
-  filteredWorks.forEach(work => {
-    const workDiv = document.createElement("div");
-    workDiv.innerHTML = `
-      <img src="${work.imageUrl}" alt="${work.title}">
-      <h2>${work.title}</h2>
-      `;
-    filteredWorksSection.appendChild(workDiv);
-  });
-}
-
-// Fonction pour masquer les contenus associés aux autres catégories
-function hideOtherContent(categoryId) {
-  const contentContainers = document.querySelectorAll(".content-container");
-  contentContainers.forEach(container => {
-    if (categoryId !== 0 && container.dataset.categoryId !== categoryId) {
-      container.style.display = "none";
-    } else {
-      container.style.display = "block";
-    }
-  });
-}
-
-// Fonction pour afficher le contenu associé à la catégorie sélectionnée
 function displayWorks(filter = 0) {
-  console.log(allWorks);
+  let selectedWorks = allWorks;
 
-  // Affichage de l'api Works sur l'html
+  if (filter !== 0) {
+    selectedWorks = [...allWorks].filter(work => work.categoryId == filter);
+  }
+
   try {
     const gallery = document.getElementById("gallery");
+    gallery.innerHTML = "";
 
-    allWorks.forEach(work => {
-      const workDiv = document.createElement("div");
+    selectedWorks.forEach(work => {
+      const workDiv = document.createElement("figure");
       workDiv.innerHTML = `
-          <img src="${work.imageUrl}" alt="${work.title}">
-          <h2>${work.title}</h2>
-          `;
+      <img src="${work.imageUrl}" alt="${work.title}">
+      <figcaption>${work.title}</figcaption>
+    `;
       gallery.appendChild(workDiv);
     });
   } catch (error) {
     console.error('Une erreur est survenue lors de la récupération du contenu depuis l\'API des Works:', error);
-    alert("erreur lors du contact avec le serveur");
+    alert("Erreur lors du contact avec le serveur");
   }
 }
-
-
 //modal
-let modal = null;
-let addPhotoModal = null;
-const focusableSelector = 'button, a, input, textarea';
-let focusables = [];
-const createImageContainer = function (image, isFirst) {
+// CRÉATION DE LA PREMIERE MODAL // 
+// Fonction pour créer un conteneur d'image
+function createImageContainer(image) {
   const imageContainer = document.createElement('div');
   imageContainer.className = 'modal-image-container';
-  imageContainer.style.position = 'relative';
 
   const deleteIcon = document.createElement('i');
   deleteIcon.className = 'fa-solid fa-trash-can delete-icon';
-  deleteIcon.style.position = 'absolute';
-  deleteIcon.style.top = '0.2';
-  deleteIcon.style.right = '0';
-  deleteIcon.addEventListener('click', () => deleteWork(image.id)); // Remplacez image.id par l'ID du travail
-
+  deleteIcon.dataset.workId = image.id
   imageContainer.appendChild(deleteIcon);
-
-  if (isFirst) {
-    const icon = document.createElement('i');
-    icon.className = 'fa-solid fa-arrows-up-down-left-right';
-    icon.style.position = 'absolute';
-    icon.style.top = '1';
-    icon.style.right = '0.5';
-    imageContainer.appendChild(icon);
+  // (id === 0 ) pour l'affichage arrow que sur le 1er élément 
+  if (image.id === 1) {
+    const moveIcon = document.createElement('i')
+    moveIcon.className = 'fa-solid fa-arrows-up-down-left-right'
+    imageContainer.appendChild(moveIcon);
   }
 
   const imageElement = document.createElement('img');
-  imageElement.src = image.src;
-  imageElement.alt = image.alt;
+  imageElement.src = image.imageUrl;
+  imageElement.alt = image.title;
 
   const editText = document.createElement('p');
   editText.className = 'edit-text';
@@ -165,11 +114,84 @@ const createImageContainer = function (image, isFirst) {
   return imageContainer;
 };
 
-// ... le reste du code
+function setDeleteListener() {
+  // Fonction Icon delete (poubelle)
+  const deleteIcons = document.querySelectorAll('.delete-icon');
+  deleteIcons.forEach(deleteIcon => {
+    deleteIcon.addEventListener('click', async (e) => {
+      const workIdToDelete = e.target.dataset.workId;
+      if (workIdToDelete) {
+        try {
+          const testDel = await api.deleteWork(workIdToDelete, token);
+          if (testDel) {
+            console.log('Travail supprimé avec succès.');
+            for (const work of allWorks) {
+              if (work.id == workIdToDelete) {
+                allWorks.remove(work)
+                break
+              }
+              displayWorks()
+              displayWorksModal()            }
+            //retrait work de allWorks + displayWork & displayWorksModal
+          }
+        } catch (error) {
+          console.error('Erreur lors de la suppression :', error);
+        }
+      }
+    });
+  });
+  const addPhotoLink = document.querySelector('.js-addphoto');
+  addPhotoLink.addEventListener('click', (e) => openAddPhotoModal(e, addPhotoLink.getAttribute('href')));
 
 
+}
 
-const closeModal = function (targetModal) {
+function displayWorksModal() {
+  const modalGallery = document.querySelector('#modal-gallery');
+  modalGallery.innerHTML = '';
+  allWorks.forEach((image) => {
+    const imageContainer = createImageContainer(image);
+    modalGallery.appendChild(imageContainer);
+  });
+  setDeleteListener()
+}
+// Fonction pour ouvrir la fenêtre modale
+function openModal(e, targetModal) {
+  e.preventDefault();
+  modal = document.querySelector(targetModal);
+  focusables = Array.from(modal.querySelectorAll(focusableSelector));
+  showModal(modal);
+};
+
+function openAddPhotoModal (e, targetModal)  {
+  e.preventDefault();
+  addPhotoModal = document.querySelector(targetModal);
+  focusables = Array.from(addPhotoModal.querySelectorAll(focusableSelector));
+  showModal(addPhotoModal);
+
+  document.addEventListener('click', (event) => {
+    if (!addPhotoModal.contains(event.target)) {
+      closeModal(addPhotoModal);
+    }
+  });
+
+};
+// Fonction affichage modal 
+function showModal (modalElement) {
+  modalElement.style.display = null;
+  modalElement.removeAttribute('aria-hidden');
+  modalElement.setAttribute('aria-modal', 'true');
+  modalElement.addEventListener('click', () => closeModal(modalElement));
+  modalElement.querySelector('.js-modal-close').addEventListener('click', () => closeModal(modalElement));
+  modalElement.querySelector('.js-modal-stop').addEventListener('click', stopPropagation);
+};
+
+
+//PARTIE FERMETURE MODAL // 
+
+
+// fonction fermer la modal en cliquant en dehors 
+function closeModal  (targetModal)  {
   if (targetModal === null) return;
   targetModal.style.display = 'none';
   targetModal.setAttribute('aria-hidden', 'true');
@@ -177,15 +199,14 @@ const closeModal = function (targetModal) {
   targetModal.removeEventListener('click', () => closeModal(targetModal));
   targetModal.querySelector('.js-modal-close').removeEventListener('click', () => closeModal(targetModal));
   targetModal.querySelector('.js-modal-stop').removeEventListener('click', stopPropagation);
-
   targetModal = null;
 };
 
-const stopPropagation = function (e) {
+const stopPropagation = (e) => {
   e.stopPropagation();
 };
-
-const focusInModal = function (e, targetModal, focusables) {
+// focus dans la modal 
+function focusInModal  (e, targetModal, focusables)  {
   e.preventDefault();
   let index = focusables.findIndex((f) => f === targetModal.querySelector(':focus'));
   index++;
@@ -194,81 +215,29 @@ const focusInModal = function (e, targetModal, focusables) {
   }
   focusables[index].focus();
 };
-
-const openAddPhotoModal = function (e, targetModal) {
-  e.preventDefault();
-  addPhotoModal = document.querySelector(targetModal);
-  focusables = Array.from(addPhotoModal.querySelectorAll(focusableSelector));
-  addPhotoModal.style.display = null;
-  addPhotoModal.removeAttribute('aria-hidden');
-  addPhotoModal.setAttribute('aria-modal', 'true');
-  addPhotoModal.addEventListener('click', () => closeModal(addPhotoModal));
-  addPhotoModal.querySelector('.fa-xmark').addEventListener('click', () => closeModal(addPhotoModal));
-  addPhotoModal.querySelector('.js-modal-stop').addEventListener('click', stopPropagation);
-
-  document.addEventListener('click', (event) => {
-    if (!addPhotoModal.contains(event.target)) {
+// interraction modal
+function setupModals() {
+  document.querySelectorAll('.js-modal').forEach((a) => {
+    a.addEventListener('click', (e) => openModal(e, a.getAttribute('href')));
+  });
+  //utilisation clavier modal 
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' || e.key === 'Esc') {
+      closeModal(modal);
       closeModal(addPhotoModal);
     }
+    if (e.key === 'Tab' && (modal !== null || addPhotoModal !== null)) {
+      focusInModal(e, modal || addPhotoModal, focusables);
+    }
   });
-};
-
-const openModal = function (e, targetModal) {
-  e.preventDefault();
-  modal = document.querySelector(targetModal);
-  focusables = Array.from(modal.querySelectorAll(focusableSelector));
-  modal.style.display = null;
-  modal.removeAttribute('aria-hidden');
-  modal.setAttribute('aria-modal', 'true');
-  modal.addEventListener('click', () => closeModal(modal));
-  modal.querySelector('.js-modal-close').addEventListener('click', () => closeModal(modal));
-  modal.querySelector('.js-modal-stop').addEventListener('click', stopPropagation);
-
-  const addPhotoLink = modal.querySelector('.js-addphoto');
-  addPhotoLink.addEventListener('click', (e) => openAddPhotoModal(e, addPhotoLink.getAttribute('href')));
-
-  const modalGallery = modal.querySelector('#modal-gallery');
-  modalGallery.innerHTML = '';
-
-  const galleryImages = document.querySelectorAll('#gallery img');
-
-  galleryImages.forEach((image, index) => {
-    const imageContainer = createImageContainer(image, index === 0);
-    modalGallery.appendChild(imageContainer);
-  });
-};
-
-document.querySelectorAll('.js-modal').forEach((a) => {
-  a.addEventListener('click', (e) => openModal(e, a.getAttribute('href')));
-});
-
-window.addEventListener('keydown', function (e) {
-  if (e.key === 'Escape' || e.key === 'Esc') {
-    closeModal(modal);
+  // arrow retour modal 2 à 1 
+  document.querySelector('.js-modal-return').addEventListener('click', (e) => {
+    e.preventDefault();
     closeModal(addPhotoModal);
-  }
-  if (e.key === 'Tab' && (modal !== null || addPhotoModal !== null)) {
-    focusInModal(e, modal || addPhotoModal, focusables);
-  }
-});
-
-const deleteWork = async (workId) => {
-  try {
-    const response = await fetch(`/api/works/${workId}`, {
-      method: 'DELETE',
-    });
-
-    if (!response.ok) {
-      throw new Error('La suppression a échoué.');
-    }
-
-    const deletedWorkContainer = document.querySelector(`[data-work-id="${workId}"]`);
-    if (deletedWorkContainer) {
-      deletedWorkContainer.remove();
-    } else {
-      console.log('Élément introuvable dans le DOM.');
-    }
-  } catch (error) {
-    console.error('Erreur lors de la suppression :', error);
-  }
+  });
 };
+
+
+
+
+

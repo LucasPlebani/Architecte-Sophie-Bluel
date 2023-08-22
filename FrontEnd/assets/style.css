@@ -379,7 +379,7 @@ cursor: pointer;
  .modifier-h2 .fa-regular {
 	color: black;
  }
- .a.js-modal { width: 100px;
+ .js-modal { width: 100px;
 	font-family: 'Work Sans';
 font-size: 16px;
 font-weight: 200;
@@ -439,12 +439,7 @@ margin-bottom: 50px;
 #modal-gallery h2{ 
 	font-size: 0px;
 }
-#modal-gallery{	
-	display: grid;
-	grid-template-columns:  2fr 2fr 2fr 2fr 2fr ;
-	grid-row-gap: 30px ;
-		
-}
+
 .hr-modal {  color: #B3B3B3;
 	width: 80%;
 	height: 0px;
@@ -452,16 +447,32 @@ margin-bottom: 50px;
 	margin-top: 15%;
 	margin-bottom: 10%;
   }
+  #modal-image-container { 
+	position: relative;
+  }
 /* button modal */
-button.js-modal-close {display: flex;
 
+
+.fa-arrow-left {
+font-size: 25px;
+	color: black;
+}
+button.js-modal-close {
 border: none;
 background-color: #ffffff;
 cursor: pointer;
-margin-left: 100%;
-
+}
+button.js-modal-return { border: none;
+background-color: #ffffff;
+margin-right: 90%;
+cursor: pointer;
 }
 .fa-xmark{ font-size: 25px;
+}
+
+.button-modal-top {display: flex;
+flex-direction: row-reverse;
+align-items: center;
 }
 
 .js-addphoto {display: flex;
@@ -492,27 +503,50 @@ margin-left: 100%;
 	cursor: pointer;
 	font-weight: 100 ; }
 
-.fa-arrows-up-down-left-right	{ 
-	color: white;
-background-color: black;
-padding: 3px;
-border-radius: 5px;
-font-size: 15px;
-margin-left : 45px;
-margin-top: 10px;
-cursor: pointer;
-}
-.fa-trash-can{
-	position:static;
-	color: white;
-background-color: black;
-padding: 3px;
-border-radius: 5px;
-font-size: 15px;
-margin-right: 30px;
-margin-top: 8%;
-cursor: pointer;
-}
+
+	#modal-gallery {
+		display: grid;
+		grid-template-columns: repeat(5, 2fr);
+		grid-row-gap: 30px;
+	  }
+	   
+	  .fa-trash-can  {
+		position: relative; 
+		color: white;
+		background-color: black;
+		padding: 3px;
+		border-radius: 5px;
+		font-size: 15px;
+		cursor: pointer;
+		top: 30px;
+		left: 70px;
+
+		
+	  }
+	  
+	 .fa-arrows-up-down-left-right {
+		position: relative; 
+		display: inline-block;
+		color: white;
+		background-color: black;
+		padding: 3px;
+		border-radius: 5px;
+		font-size: 15px;
+		cursor: pointer;
+		top: 30px;
+		left: 25px;
+		
+	 }
+	 
+	  
+	 
+	 .modal-image-container::before {	
+		position: absolute;	
+	  }
+	 
+	  
+	  
+
 .edit-text { margin-top: 5px;
 cursor: pointer;}
 
@@ -544,3 +578,44 @@ button.ajouterPhoto { display: flex;
 	cursor: pointer;
 	}
 	.textModalPhoto{ text-align: center;}
+
+	.js-valider{ display: flex;
+		justify-content: center;
+		font-family: 'Syne';
+		font-size: 18px;
+		border: none;
+		color: white;
+		background-color: #B3B3B3;
+		margin : 2em auto ;
+		border-radius: 60px ;
+		padding: 15px 60px 15px 60px;
+		cursor: pointer;
+		width: 30%;
+		text-decoration: none;
+
+	}
+	.form-ajout-photo{ margin-top: 50px;}
+	#title.labelModal {display:flex;
+		align-items: center;
+		width: 62%;
+		justify-content: center;
+		margin-left: 9%;
+		display:flex;
+		padding: 15px 60px 15px 60px;
+	font-size: 1.2em;
+	border: none;
+	box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.09);
+	margin-top: 2%;}
+	.labelModalCategorie {display:flex;
+		
+		align-items: center;
+		justify-content: center;
+		width: 62%;
+		margin-left: 9%;
+		display:flex;
+		padding: 15px 60px 15px 60px;
+	font-size: 1.2em;
+	border: none;
+	box-shadow: 0px 4px 14px rgba(0, 0, 0, 0.09);
+	margin-top: 2%;}
+	.label3 { padding-left: 9%;}

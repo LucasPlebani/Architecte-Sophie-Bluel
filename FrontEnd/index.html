@@ -56,31 +56,42 @@
 						<a href="#modal2" class="js-addphoto">Ajouter une photo</a> <br>
 						<input class="delPhoto" type="button" value="Supprimer la Galerie">
 					</div>
+
 				</aside>
+
+
 				<aside id="modal2" class="modal" aria-hidden="true" role="dialog" aria-labelledby="titlemodal2"
-				style="display: none;">
-			 <div class="modal-wrapper js-modal-stop">
-			   <button class="js-modal-close"><i class="fa-solid fa-xmark"></i></button>
-			   <h1 id="titlemodal"> Ajout photo</h1>
-		   
-			   <form method="post" enctype="multipart/form-data">
-				 <div class="blueCadre">
-				   <label for="file"><i class="fa-sharp fa-regular fa-image"></i></label>
-				   <input type="file" id="file" style="display: none;"> <!-- Masquer l'input -->
-				   <div class="textModalPhoto">
-					 <label for="file" class="ajouterPhotoLabel"></label> <!-- Utiliser le label pour déclencher l'input -->
-					 <button class="ajouterPhoto" id="submitPhoto">+ Ajouter photo</button> <!-- Garder ce bouton pour envoyer la photo -->
-					 <p>jpg, png : 4mo max</p>
-				   </div>
-				 </div>
-			   </form>
-			 </div>
-			 <div>
-				<label for="title" class="label">Title</label>
-				<input type="text" class="labelModal" id="title" name="title">
-			</div>.  
-		   </aside>
-		   
+					style="display: none;">
+					<div class="modal-wrapper js-modal-stop">
+						<div class="button-modal-top"> <button class="js-modal-close"><i
+									class="fa-solid fa-xmark"></i></button>
+							<button class="js-modal-return"><i class="fa-solid fa-arrow-left"></i></button>
+						</div>
+						<h1 id="titlemodal"> Ajout photo</h1>
+
+						<form id="addWorkForm" method="post" enctype="multipart/form-data">
+
+							<div class="blueCadre">
+								<label for="image"><i class="fa-sharp fa-regular fa-image"></i></label>
+								<input type="file" id="image" name="image" style="display: none;">
+								<div class="textModalPhoto">
+									<label for="image" class="ajouterPhotoLabel"></label>
+									<button class="ajouterPhoto" id="submitPhoto">+ Ajouter photo</button>
+									<p>jpg, png : 4mo max</p>
+								</div>
+							</div>
+							<div class="form-ajout-photo">
+								<label for="title" class="label3">Titre</label>
+								<input type="text" class="labelModal" id="title" name="title">
+								<br>
+								<label for="category" class="label3">Catégorie</label>
+								<input type="text" class="labelModalCategorie" id="category" name="category">
+								<hr class="hr-modal">
+								<button type="submit" class="js-valider">Valider</button>
+							</div>
+						</form>
+				</aside>
+
 			</figure>
 			<article id="text-before-porfolio">
 				<h2>Designer d'espace</h2>
