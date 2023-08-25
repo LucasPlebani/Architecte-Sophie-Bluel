@@ -25,53 +25,63 @@ export async function deleteWork(id, token){
 }
   // Appel API Ajout Photo
   
-const addWork = async (event) => {
-  event.preventDefault();
+  export async function addWork(formData, token) {
+    try {
+      const response = await fetch('http://localhost:5678/api/works', {
+        method: 'POST',
+        body: formData,
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+  
+      if (response.ok) {
+        return true; // Ajout a réussi
+      } else {
+        throw new Error('L\'ajout a échoué');
+      }
+    } catch (error) {
+      console.error(error);
+      return null; // Erreur lors de la requête
+    }
+  }
+  
+  
+  // Page Login 
 
-  const formData = new FormData(addWorkForm);
-
+export async function loginUser(email, password) {
   try {
-    const response = await fetch('/api/works', {
-      method: 'POST',
-      body: formData,
+    const response = await fetch("http://localhost:5678/api/users/login", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email, password }),
     });
 
-    if (!response.ok) {
-      const errorResponse = await response.json();
-      throw new Error(`Erreur lors de l'ajout du travail: ${errorResponse.message}`);
-    } else {
-      const addedWork = await response.json();
-      if (addedWork) {
-        console.log('Nouveau travail ajouté :', addedWork);
-      }
-    }
+    const data = await response.json();
+
+    return data.token || null;
   } catch (error) {
-    console.error(error);
+    console.error("Une erreur s'est produite lors de la connexion :", error);
+    throw new Error("Erreur lors de la connexion. Veuillez réessayer plus tard.");
   }
-};
-const addWorkForm = document.getElementById('addWorkForm');
-addWorkForm.addEventListener('submit', addWork);
-  
-// Gestionnaires d'événements pour les icônes de suppression
-document.querySelectorAll('.delete-icon').forEach(deleteIcon => {
-	deleteIcon.addEventListener('click', async (e) => {
-		console.log('addEventListener');
-	  const workIdToDelete = e.target.getAttribute('data-work-id');
-	  if (workIdToDelete) {
-		try {
-		  await deleteWork(workIdToDelete); // Appeler la fonction de suppression
-		  console.log('Travail supprimé avec succès.');
-		  
-		  // Supprimer l'élément associé au DOM
-		  const deletedWorkContainer = document.querySelector(`[data-work-id="${workIdToDelete}"]`);
-		  if (deletedWorkContainer) {
-			deletedWorkContainer.remove();
-		  }
-		} catch (error) {
-		  console.error('Erreur lors de la suppression :', error);
-		}
-	  }
-	});
-  });
-  
-  
+}
+
+export async function fetchProtectedData(token) {
+  try {
+    const response = await fetch("http://localhost:5678/api/login", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Une erreur s'est produite lors de la récupération des données :", error);
+    throw new Error("Erreur lors de la récupération des données. Veuillez réessayer plus tard.");
+  }
+}

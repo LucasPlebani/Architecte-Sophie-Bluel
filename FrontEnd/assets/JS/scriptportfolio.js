@@ -1,11 +1,12 @@
 import * as api from "./api.js"; /* import de /api.js sur scriptporfolio.js*/
 const allWorks = new Set(); // création du set allWorks 
 const allCats = new Set(); // création du set allCat 
-let modal = null; // fenetre modale 
-let addPhotoModal = null; // fenetre modale ajout photo
+let modal = {}; // fenetre modale 
+let addPhotoModal = {}; // fenetre modale ajout photo
 const focusableSelector = 'button, a, input, textarea'; // Sélecteur pour les éléments focusables dans la fenêtre modale
 let focusables = []; // Tableau pour stocker les éléments focusables dans la fenêtre modale
 const token = localStorage.getItem("token")
+let moveIcon = null;
 
 async function init() {
   const works = await api.getDatabaseInfo("works");
@@ -26,19 +27,41 @@ async function init() {
   }
   displayWorks();  /* Affichage dans la console*/
   if(token){
-    displayAdmin();
+    displayAdmin(true);
     displayWorksModal();
-    setupModals();
+    setupModals(); 
+    updateCategoryDropdown()
   } else {
-    displayCats();
+   displayCats();
+   displayAdmin(false);
   }
 }
 init();
+// function affichage Admin / user 
+function displayAdmin(isAdminLoggedIn) {
 
-function displayAdmin(){
-
+  const adminBar = document.querySelector('.black-bar');
+  const adminModificationElements = document.querySelectorAll('.admin-modification');
+  const tousButton = document.getElementById('tous-input');
+  
+  if (isAdminLoggedIn) {
+    adminBar.style.visibility = 'visible';
+    adminModificationElements.forEach(element => {
+ 
+      element.style.visibility = 'visible';
+    });
+    tousButton.style.visibility = 'hidden';
+  } else {
+    adminBar.style.visibility = 'hidden';
+    adminModificationElements.forEach(element => {
+      element.style.visibility = 'hidden';
+    });
+    tousButton.style.visibility = 'visible';
+  }
 }
 
+
+// Affichage Catégorie
 function displayCats() {
   const tousButton = document.getElementById("tous-input");
   tousButton.addEventListener("click", function () {
@@ -82,23 +105,56 @@ function displayWorks(filter = 0) {
     alert("Erreur lors du contact avec le serveur");
   }
 }
+// boutton login/logout 
+function logButton() {
+  const loginLink = document.getElementById("loginLink");
+  const token = localStorage.getItem("token");
+
+  if (token) {
+    loginLink.textContent = "logout";
+    loginLink.addEventListener("click", function () {
+      localStorage.removeItem("token");
+    });
+  } else {
+    // Utilisateur non connecté : laissez le texte du lien comme "login"
+  }
+}
+
+document.addEventListener("DOMContentLoaded", logButton);
+
+
 //modal
 // CRÉATION DE LA PREMIERE MODAL // 
 // Fonction pour créer un conteneur d'image
 function createImageContainer(image) {
-  const imageContainer = document.createElement('div');
+  const imageContainer = document.createElement('figure');
   imageContainer.className = 'modal-image-container';
 
   const deleteIcon = document.createElement('i');
   deleteIcon.className = 'fa-solid fa-trash-can delete-icon';
   deleteIcon.dataset.workId = image.id
   imageContainer.appendChild(deleteIcon);
-  // (id === 0 ) pour l'affichage arrow que sur le 1er élément 
-  if (image.id === 1) {
-    const moveIcon = document.createElement('i')
-    moveIcon.className = 'fa-solid fa-arrows-up-down-left-right'
-    imageContainer.appendChild(moveIcon);
-  }
+  
+  // Fonction MoveIcon modal hover 
+  
+
+  const addMoveIcon = () => {
+    if (!moveIcon) {
+      moveIcon = document.createElement('i');
+      moveIcon.className = 'fa-solid fa-arrows-up-down-left-right';
+      imageElement.insertAdjacentElement('afterend', moveIcon);
+    }
+  };
+
+  const removeMoveIcon = () => {
+    if (moveIcon) {
+      moveIcon.remove();
+      moveIcon = null;
+    }
+  };
+
+  imageContainer.addEventListener('mouseover', addMoveIcon);
+  imageContainer.addEventListener('mouseout', removeMoveIcon);
 
   const imageElement = document.createElement('img');
   imageElement.src = image.imageUrl;
@@ -115,7 +171,7 @@ function createImageContainer(image) {
 };
 
 function setDeleteListener() {
-  // Fonction Icon delete (poubelle)
+  // Fonction Delete work
   const deleteIcons = document.querySelectorAll('.delete-icon');
   deleteIcons.forEach(deleteIcon => {
     deleteIcon.addEventListener('click', async (e) => {
@@ -143,9 +199,96 @@ function setDeleteListener() {
   const addPhotoLink = document.querySelector('.js-addphoto');
   addPhotoLink.addEventListener('click', (e) => openAddPhotoModal(e, addPhotoLink.getAttribute('href')));
 
+}
+// Fonction pour gérer l'ajout d'une nouvelle œuvre
+async function addWorkListener() {
+  const addWorkForm = document.getElementById('addWorkForm');
+  const imagePreview = document.getElementById('image-preview');
+  const submitPhotoButton = document.getElementById("submitPhoto");
+  const imageInput = document.getElementById("image");
+  const titleInput = document.getElementById("title");
+  const categoryInput = document.getElementById("category");
+  const validerButton = document.querySelector(".js-valider"); // Sélectionner le bouton "Valider"
 
+  submitPhotoButton.addEventListener("click", function(event) {
+      event.preventDefault(); // Empêcher le comportement par défaut du clic sur le bouton
+  });
+
+  validerButton.addEventListener("click", async function(event) {
+    event.preventDefault();
+
+    const formData = new FormData();
+
+    if (imageInput.files && imageInput.files[0]) {
+      formData.append("image", imageInput.files[0]);
+    }
+
+    formData.append("title", titleInput.value);
+    formData.append("category", categoryInput.value);
+
+    try {
+      const response = await api.addWork(formData, token);
+      if (response) {
+        // Le travail a été ajouté avec succès
+      }
+    } catch (error) {
+      console.error('Erreur lors de l\'ajout du travail :', error);
+    }
+  });
+
+  imageInput.addEventListener("change", function () {
+      if (imageInput.files && imageInput.files[0]) {
+          const reader = new FileReader();
+
+          reader.onload = function (e) {
+              imagePreview.src = e.target.result;
+              imagePreview.style.display = "block";
+          };
+
+          reader.readAsDataURL(imageInput.files[0]);
+      }
+  });
 }
 
+// Appeler la fonction pour activer l'écouteur d'événement
+addWorkListener();
+
+// Fonction pour mettre à jour les options du menu déroulant des catégories
+function updateCategoryDropdown() {
+  const categoryDropdown = document.getElementById("category");
+
+  // Supprimez toutes les options existantes
+  categoryDropdown.innerHTML = '<option value="0">Tous</option>';
+
+  // Ajoutez les nouvelles options basées sur les catégories de l'API
+  allCats.forEach(category => {
+    const option = document.createElement("option");
+    option.value = category.id;
+    option.textContent = category.name;
+    categoryDropdown.appendChild(option);
+  });
+}
+
+// Fonction à appeler lorsqu'une catégorie est sélectionnée
+function onCategorySelect() {
+  // Mettez à jour l'affichage en fonction de la catégorie sélectionnée
+  const selectedCategoryId = document.getElementById("category").value;
+  displayWorks(selectedCategoryId); // Appel de la fonction qui affiche les œuvres en fonction de la catégorie sélectionnée
+}
+
+// Appelez la fonction pour mettre à jour les options du menu déroulant
+updateCategoryDropdown();
+
+// Ajoutez un écouteur d'événement pour gérer les changements de catégorie
+document.getElementById("category").addEventListener("change", onCategorySelect);
+
+
+
+
+
+
+
+//Fonction affichage modal
 function displayWorksModal() {
   const modalGallery = document.querySelector('#modal-gallery');
   modalGallery.innerHTML = '';
@@ -162,7 +305,7 @@ function openModal(e, targetModal) {
   focusables = Array.from(modal.querySelectorAll(focusableSelector));
   showModal(modal);
 };
-
+// Fonction pour ouvrir la fenêtre modale d'ajout de photo
 function openAddPhotoModal (e, targetModal)  {
   e.preventDefault();
   addPhotoModal = document.querySelector(targetModal);
@@ -176,6 +319,7 @@ function openAddPhotoModal (e, targetModal)  {
   });
 
 };
+addWorkListener();
 // Fonction affichage modal 
 function showModal (modalElement) {
   modalElement.style.display = null;
