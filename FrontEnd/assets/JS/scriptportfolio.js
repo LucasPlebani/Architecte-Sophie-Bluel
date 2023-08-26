@@ -30,7 +30,9 @@ async function init() {
     displayAdmin(true);
     displayWorksModal();
     setupModals(); 
-    updateCategoryDropdown()
+    updateCategoryDropdown();
+    addWorkListener();
+    
   } else {
    displayCats();
    displayAdmin(false);
@@ -208,59 +210,79 @@ async function addWorkListener() {
   const imageInput = document.getElementById("image");
   const titleInput = document.getElementById("title");
   const categoryInput = document.getElementById("category");
-  const validerButton = document.querySelector(".js-valider"); // Sélectionner le bouton "Valider"
+  const validerButton = document.querySelector(".js-valider"); 
 
   submitPhotoButton.addEventListener("click", function(event) {
-      event.preventDefault(); // Empêcher le comportement par défaut du clic sur le bouton
+    event.preventDefault(); 
   });
-
   validerButton.addEventListener("click", async function(event) {
     event.preventDefault();
-
+    
     const formData = new FormData();
-
+    
     if (imageInput.files && imageInput.files[0]) {
       formData.append("image", imageInput.files[0]);
     }
-
+    
     formData.append("title", titleInput.value);
     formData.append("category", categoryInput.value);
-
+    
     try {
       const response = await api.addWork(formData, token);
       if (response) {
-        // Le travail a été ajouté avec succès
+        //Maj liste oeuvre
+        const newWork = {
+          imageUrl: imagePreview.src,
+          title: titleInput.value,
+          categoryId: categoryInput.value
+        };
+        allWorks.add(newWork);
+      
+    
+        // Actualisation
+        displayWorks();
+        
+        
+        // Ajouter l'image à la galerie
+        const gallery = document.getElementById('gallery');
+        const newImage = document.createElement('img');
+        newImage.src = newWork.imageUrl;
+        gallery.appendChild(newImage);
+        displayWorksModal(); 
       }
     } catch (error) {
       console.error('Erreur lors de l\'ajout du travail :', error);
     }
   });
+  
+
+  // Eviter le refresh de la page 
+  addWorkForm.addEventListener("submit", function(event) {
+    event.preventDefault();
+  });
 
   imageInput.addEventListener("change", function () {
-      if (imageInput.files && imageInput.files[0]) {
-          const reader = new FileReader();
+    if (imageInput.files && imageInput.files[0]) {
+      const reader = new FileReader();
 
-          reader.onload = function (e) {
-              imagePreview.src = e.target.result;
-              imagePreview.style.display = "block";
-          };
+      reader.onload = function (e) {
+        imagePreview.src = e.target.result;
+        imagePreview.style.display = "block";
+      };
 
-          reader.readAsDataURL(imageInput.files[0]);
-      }
+      reader.readAsDataURL(imageInput.files[0]);
+    }
   });
 }
 
 // Appeler la fonction pour activer l'écouteur d'événement
 addWorkListener();
 
-// Fonction pour mettre à jour les options du menu déroulant des catégories
+
+// Fonction Menu déroulant Categories
 function updateCategoryDropdown() {
   const categoryDropdown = document.getElementById("category");
-
-  // Supprimez toutes les options existantes
   categoryDropdown.innerHTML = '<option value="0">Tous</option>';
-
-  // Ajoutez les nouvelles options basées sur les catégories de l'API
   allCats.forEach(category => {
     const option = document.createElement("option");
     option.value = category.id;
@@ -269,23 +291,13 @@ function updateCategoryDropdown() {
   });
 }
 
-// Fonction à appeler lorsqu'une catégorie est sélectionnée
+// Fonction Sélection categories
 function onCategorySelect() {
-  // Mettez à jour l'affichage en fonction de la catégorie sélectionnée
   const selectedCategoryId = document.getElementById("category").value;
-  displayWorks(selectedCategoryId); // Appel de la fonction qui affiche les œuvres en fonction de la catégorie sélectionnée
+  displayWorks(selectedCategoryId); 
 }
-
-// Appelez la fonction pour mettre à jour les options du menu déroulant
 updateCategoryDropdown();
-
-// Ajoutez un écouteur d'événement pour gérer les changements de catégorie
 document.getElementById("category").addEventListener("change", onCategorySelect);
-
-
-
-
-
 
 
 //Fonction affichage modal
