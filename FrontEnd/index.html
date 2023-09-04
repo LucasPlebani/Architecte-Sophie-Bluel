@@ -21,7 +21,7 @@
 
 	<div class="black-bar" id="admin-bar">
 		<i class="fa-regular fa-pen-to-square"></i>
-		<a href=#modal1 class="js-modal">Mode édition</a>
+		<a class="js-modal">Mode édition</a>
 
 		<button class="changement">Publier les changements</button>
 	</div>
@@ -32,10 +32,10 @@
 		<h1>Sophie Bluel <span>Architecte d'intérieur</span></h1>
 		<nav>
 			<ul>
-				<li>projets</li>
-				<li>contact</li>
-				<a id="loginLink" class="login-a" href="../FrontEnd/login.html">login</a>
-				<li><img src="./assets/icons/instagram.png" alt="Instagram"></li>
+				<li id="projet-page">projets</li>
+				<li id="contact-page">contact</li>
+				<a id="loginLink" class="login-a" href="./login.html">login</a>
+				<li><img class="insta-image" src="./assets/icons/instagram.png" alt="Instagram"></li>
 			</ul>
 		</nav>
 	</header>
@@ -46,7 +46,7 @@
 				<div class="admin-modification">
 					<div class="modifier1">
 						<i class="fa-regular fa-pen-to-square"></i>
-						<a href=#modal1 class="js-modal">modifier</a>
+						<a class="js-modal">modifier</a>
 					</div>
 				</div>
 				<aside id="modal1" class="modal" aria-hidden="true" role="dialog" aria-labelledby="titlemodal"
@@ -75,6 +75,7 @@
 
         <form id="addWorkForm" method="post" enctype="multipart/form-data">
             <div class="blueCadre" >
+				
                 <label for="image-input" class="file-label">
 					<input type="file" id="image" name="image" class="file-input">
                     <i class="fa-sharp fa-regular fa-image"></i>
@@ -124,6 +125,7 @@
 
 
 		<section id="portfolio">
+			<a href="#projet-page"></a>
 			<div class="modifier-h2">
 				<h2>Mes Projets</h2>
 				<div class="admin-modification">
@@ -145,6 +147,7 @@
 		</section>
 		<section id="contact">
 			<h2>Contact</h2>
+			<a href="#contact-page"></a>
 			<p>Vous avez un projet ? Discutons-en !</p>
 			<form action="#" method="post">
 				<label for="name">Nom</label>

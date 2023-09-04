@@ -14,7 +14,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (token) {
         localStorage.setItem("token", token);
-        window.location.href = "../FrontEnd/index.html";
+        window.location.href = "./index.html";
       } else {
         alert("Nom d'utilisateur ou mot de passe incorrect.");
       }
